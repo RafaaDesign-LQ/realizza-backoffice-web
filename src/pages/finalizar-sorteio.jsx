@@ -3,7 +3,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import { Grid, TextField, Typography } from "@mui/material";
+import { Grid, Input, TextField, Typography } from "@mui/material";
 import { Layout } from "src/layouts/dashboard/layout";
 import { CalendarIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
@@ -31,7 +31,9 @@ export default function FinalizarSorteio() {
     watch,
     formState: { errors },
   } = useForm();
+
   const onSubmitDate = (data) => console.log(data);
+  const onSubmitCheckWinner = (data) => console.log(data);
 
   const getDraws = async () => {
     const draws = await GetAllDrawsUsecase();
@@ -99,9 +101,7 @@ export default function FinalizarSorteio() {
 
             <form onSubmit={handleSubmit(onSubmitDate)}>
               <Box sx={{ display: "flex", justifyItems: "center", alignItems: "center", gap: 1 }}>
-                <Typography {...register("teste")} color="#A8A6A6">
-                  DATA:
-                </Typography>
+                <Typography color="#A8A6A6">DATA:</Typography>
 
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
@@ -123,7 +123,9 @@ export default function FinalizarSorteio() {
           </Box>
 
           <Box>
-            <Image src={BMWImage} alt="A Bmw X1 car" width={504} height={336} />
+            {selectedDraw?.name === "Sorteio BMW X1" && (
+              <Image src={BMWImage} alt="A Bmw X1 car" width={504} height={336} />
+            )}
           </Box>
         </Box>
 
@@ -151,43 +153,34 @@ export default function FinalizarSorteio() {
           />
         </Box>
 
-        <Box
-          sx={{
-            display: "flex",
-            marginTop: 10,
-            alignItems: "center",
-            gap: 5,
-            justifyContent: "center",
-          }}
-        >
-          <Image
-            src={LoteriaFederalImg}
-            width={266}
-            height={124}
-            alt="A image with letters write loteria federal"
-          />
-
-          <Typography textAlign="end" fontWeight={700}>
-            NÚMERO SORTEADO <br />
-            01 JAN 2024
-          </Typography>
-
+        <form onSubmit={handleSubmit(onSubmitCheckWinner)}>
           <Box
-            px={6}
-            py={2}
             sx={{
-              border: 2,
-              borderRadius: 1,
-              borderColor: "#E7E7E7",
+              display: "flex",
+              marginTop: 10,
+              alignItems: "center",
+              gap: 5,
+              justifyContent: "center",
             }}
           >
-            <Typography fontWeight={700}>540834</Typography>
-          </Box>
+            <Image
+              src={LoteriaFederalImg}
+              width={266}
+              height={124}
+              alt="A image with letters write loteria federal"
+            />
 
-          <Button variant="contained" size="large">
-            CONFERIR GANHADOR
-          </Button>
-        </Box>
+            <Typography textAlign="end" fontWeight={700}>
+              NÚMERO SORTEADO <br />
+            </Typography>
+
+            <TextField id="outlined-basic" variant="outlined" {...register("ticket")} />
+
+            <Button variant="contained" size="large" type="submit">
+              CONFERIR GANHADOR
+            </Button>
+          </Box>
+        </form>
 
         <Box mt={5} mb={5}>
           <Typography fontSize={30} fontWeight={700}>
