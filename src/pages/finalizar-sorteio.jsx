@@ -20,11 +20,13 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
+import { GetFinalizeDraw } from "src/provider/useCases/draws/get-finalize-draw-usecase";
 
 export default function FinalizarSorteio() {
   const [draws, setDraws] = useState([]);
   const [selectedDraw, setSelectedDraw] = useState();
   const [selectedDate, setSelectedDate] = useState(null);
+  const [winner, setWinner] = useState();
   const {
     register,
     handleSubmit,
@@ -33,7 +35,13 @@ export default function FinalizarSorteio() {
   } = useForm();
 
   const onSubmitDate = (data) => console.log(data);
-  const onSubmitCheckWinner = (data) => console.log(data);
+  const onSubmitCheckWinner = async (data) => {
+    const drawId = selectedDraw?.id;
+    const ticketNumber = data.ticket;
+
+    const winner = await GetFinalizeDraw(drawId, ticketNumber);
+    setWinner(winner._props);
+  };
 
   const getDraws = async () => {
     const draws = await GetAllDrawsUsecase();
@@ -52,6 +60,8 @@ export default function FinalizarSorteio() {
   useEffect(() => {
     getDraws();
   }, []);
+
+  console.log(winner);
 
   return (
     <Layout>
@@ -182,40 +192,42 @@ export default function FinalizarSorteio() {
           </Box>
         </form>
 
-        <Box mt={5} mb={5}>
-          <Typography fontSize={30} fontWeight={700}>
-            Proprietário do número sorteado:
-          </Typography>
-          <Typography
-            fontSize={55}
-            fontWeight={700}
-            sx={{
-              background: "linear-gradient(90deg, #44B8C3 1%, #C1BB6C 20%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            GANHADOR
-          </Typography>
-          <Image src={StarIcon} alt="Stars" width={262} height={42} />
-          <Typography
-            fontSize={55}
-            fontWeight={700}
-            sx={{
-              background: "linear-gradient(90deg, #44B8C3 1%, #C1BB6C 20%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Junior Camargo Silvano
-          </Typography>
-          <Typography fontSize={25} fontWeight={700}>
-            COTA GANHADORA
-          </Typography>
-          <Typography fontSize={25} fontWeight={700}>
-            540834
-          </Typography>
-        </Box>
+        {winner && (
+          <Box mt={5} mb={5}>
+            <Typography fontSize={30} fontWeight={700}>
+              Proprietário do número sorteado:
+            </Typography>
+            <Typography
+              fontSize={55}
+              fontWeight={700}
+              sx={{
+                background: "linear-gradient(90deg, #44B8C3 1%, #C1BB6C 20%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              GANHADOR
+            </Typography>
+            <Image src={StarIcon} alt="Stars" width={262} height={42} />
+            <Typography
+              fontSize={55}
+              fontWeight={700}
+              sx={{
+                background: "linear-gradient(90deg, #44B8C3 1%, #C1BB6C 20%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              {winner.owner.name}
+            </Typography>
+            <Typography fontSize={25} fontWeight={700}>
+              COTA GANHADORA
+            </Typography>
+            <Typography fontSize={25} fontWeight={700}>
+              {winner.ticketNumber}
+            </Typography>
+          </Box>
+        )}
       </Box>
     </Layout>
   );
