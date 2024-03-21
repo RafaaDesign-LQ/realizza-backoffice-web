@@ -3,7 +3,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import { Grid, Typography } from "@mui/material";
+import { Grid, TextField, Typography } from "@mui/material";
 import { Layout } from "src/layouts/dashboard/layout";
 import { CalendarIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
@@ -15,10 +15,23 @@ import StarIcon from "src/assets/images/stars.svg";
 import { GetAllDrawsUsecase } from "src/provider/useCases/draws/get-all-draws.usecase";
 import { useEffect, useState } from "react";
 import { GetOneDraw } from "src/provider/useCases/draws/get-one-draw-usecase";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { format } from "date-fns";
+import { useForm } from "react-hook-form";
 
 export default function FinalizarSorteio() {
   const [draws, setDraws] = useState([]);
   const [selectedDraw, setSelectedDraw] = useState();
+  const [selectedDate, setSelectedDate] = useState(null);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
+  const onSubmitDate = (data) => console.log(data);
 
   const getDraws = async () => {
     const draws = await GetAllDrawsUsecase();
@@ -28,6 +41,10 @@ export default function FinalizarSorteio() {
   const handlePrize = async (event) => {
     const selectedDraw = await GetOneDraw(event.target.value);
     setSelectedDraw(selectedDraw);
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
   };
 
   useEffect(() => {
@@ -80,26 +97,29 @@ export default function FinalizarSorteio() {
               Data do Sorteio Programada
             </Typography>
 
-            <Box sx={{ display: "flex", justifyItems: "center", alignItems: "center", gap: 1 }}>
-              <Typography color="#A8A6A6">DATA:</Typography>
+            <form onSubmit={handleSubmit(onSubmitDate)}>
+              <Box sx={{ display: "flex", justifyItems: "center", alignItems: "center", gap: 1 }}>
+                <Typography {...register("teste")} color="#A8A6A6">
+                  DATA:
+                </Typography>
 
-              <Box
-                sx={{
-                  width: "10rem",
-                  border: 2,
-                  borderRadius: 1.5,
-                  borderColor: "#E7E7E7",
-                  padding: 1,
-                  width: "17rem",
-                  gap: 3,
-                  display: "flex",
-                  justifyItems: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Typography>01 janeiro 2024</Typography> | <CalendarIcon width={25} height={25} />
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
+                    label="Selecione"
+                    renderInput={(props) => <TextField {...props} sx={{ color: "red" }} />}
+                    onChange={handleDateChange}
+                    inputFormat="dd/MM/yyyy"
+                    value={selectedDate}
+                  />
+                </LocalizationProvider>
+
+                {selectedDate && (
+                  <Button variant="contained" color="success" type="submit">
+                    Confirmar
+                  </Button>
+                )}
               </Box>
-            </Box>
+            </form>
           </Box>
 
           <Box>
@@ -126,7 +146,7 @@ export default function FinalizarSorteio() {
 
           <LinearProgress
             variant="determinate"
-            value={selectedDraw?.percentage}
+            value={selectedDraw?.percentage || 0}
             sx={{ height: 10 }}
           />
         </Box>
