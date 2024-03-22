@@ -20,9 +20,12 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
-import { GetFinalizeDraw } from "src/provider/useCases/draws/get-finalize-draw-usecase";
+import { PatchFinalizeDraw } from "src/provider/useCases/draws/patch-finalize-draw-usecase";
+import BasicModal from "src/components/modal";
+import { useModal } from "src/hooks/use-modal";
 
 export default function FinalizarSorteio() {
+  const modalDataWinner = useModal();
   const [draws, setDraws] = useState([]);
   const [selectedDraw, setSelectedDraw] = useState();
   const [selectedDate, setSelectedDate] = useState(null);
@@ -39,8 +42,8 @@ export default function FinalizarSorteio() {
     const drawId = selectedDraw?.id;
     const ticketNumber = data.ticket;
 
-    const winner = await GetFinalizeDraw(drawId, ticketNumber);
-    setWinner(winner._props);
+    const winner = await PatchFinalizeDraw(drawId, ticketNumber);
+    setWinner(winner.winnerTicket?._props);
   };
 
   const getDraws = async () => {
@@ -51,6 +54,10 @@ export default function FinalizarSorteio() {
   const handlePrize = async (event) => {
     const selectedDraw = await GetOneDraw(event.target.value);
     setSelectedDraw(selectedDraw);
+
+    if (selectedDraw.winnerTicket) {
+      setWinner(selectedDraw?.winnerTicket);
+    }
   };
 
   const handleDateChange = (date) => {
@@ -193,39 +200,63 @@ export default function FinalizarSorteio() {
         </form>
 
         {winner && (
-          <Box mt={5} mb={5}>
-            <Typography fontSize={30} fontWeight={700}>
-              Proprietário do número sorteado:
-            </Typography>
-            <Typography
-              fontSize={55}
-              fontWeight={700}
-              sx={{
-                background: "linear-gradient(90deg, #44B8C3 1%, #C1BB6C 20%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              GANHADOR
-            </Typography>
-            <Image src={StarIcon} alt="Stars" width={262} height={42} />
-            <Typography
-              fontSize={55}
-              fontWeight={700}
-              sx={{
-                background: "linear-gradient(90deg, #44B8C3 1%, #C1BB6C 20%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              {winner.owner.name}
-            </Typography>
-            <Typography fontSize={25} fontWeight={700}>
-              COTA GANHADORA
-            </Typography>
-            <Typography fontSize={25} fontWeight={700}>
-              {winner.ticketNumber}
-            </Typography>
+          <Box sx={{ display: "flex", justifyItems: "center", alignItems: "center" }} mt={5} mb={5}>
+            <div>
+              <Typography fontSize={30} fontWeight={700}>
+                Proprietário do número sorteado:
+              </Typography>
+              <Typography
+                fontSize={55}
+                fontWeight={700}
+                sx={{
+                  background: "linear-gradient(90deg, #44B8C3 1%, #C1BB6C 20%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                GANHADOR
+              </Typography>
+              <Image src={StarIcon} alt="Stars" width={262} height={42} />
+              <Typography
+                fontSize={55}
+                fontWeight={700}
+                sx={{
+                  background: "linear-gradient(90deg, #44B8C3 1%, #C1BB6C 20%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                {winner.owner.name}
+              </Typography>
+              <Typography fontSize={25} fontWeight={700}>
+                COTA GANHADORA
+              </Typography>
+              <Typography fontSize={25} fontWeight={700}>
+                {winner.ticketNumber}
+              </Typography>
+            </div>
+
+            <div>
+              <BasicModal open={modalDataWinner.open} handleClose={modalDataWinner.handleClose}>
+                <Typography>Nome: {winner.owner.name}</Typography>
+                <Typography>Email: {winner.owner.email}</Typography>
+                <Typography>CPF: {winner.owner.document}</Typography>
+
+                <Typography>
+                  Email secundário: {winner.owner.contacts && winner.owner?.contacts[0]?.email}
+                </Typography>
+                <Typography>
+                  Telefone: {winner.owner.contacts && winner.owner?.contacts[0]?.cellPhone}
+                </Typography>
+              </BasicModal>
+              <Button
+                sx={{ fontSize: "2rem" }}
+                variant="outlined"
+                onClick={() => modalDataWinner.handleOpen()}
+              >
+                Ver Dados do Ganhador
+              </Button>
+            </div>
           </Box>
         )}
       </Box>

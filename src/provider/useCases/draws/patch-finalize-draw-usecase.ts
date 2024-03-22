@@ -2,10 +2,10 @@ import { MainApiProvider } from "src/provider/MainApiProvider";
 
 const apiAprovider = new MainApiProvider();
 
-export const GetFinalizeDraw = async (drawId: string, ticketNumber: string) => {
+export const PatchFinalizeDraw = async (drawId: string, ticketNumber: string) => {
   const response = await apiAprovider.request(
-    "GET",
-    `/tickets/draws/${drawId}/tickets/${ticketNumber}/ticket-status`
+    "PATCH",
+    `/draws/${drawId}/winner-ticket/${ticketNumber}`
   );
   if (response.isFailure) return { error: response.error.message };
 
